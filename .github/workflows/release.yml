@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that the tag matches the version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          grep -q "version = \"$version\"" Sources/VanitySSH/Version.swift || {
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match Sources/VanitySSH/Version.swift"
+            exit 1
+          }
+
+      - name: Test
+        run: swift test
+
+      - name: Build universal binary
+        run: |
+          swift build -c release --arch arm64 --arch x86_64
+          bin="$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)/vanity-ssh"
+          lipo -info "$bin"
+          echo "BIN=$bin" >> "$GITHUB_ENV"
+
+      - name: Package
+        run: |
+          name="vanity-ssh-${GITHUB_REF_NAME}-macos-universal"
+          mkdir -p "dist/$name"
+          cp "$BIN" LICENSE README.md "dist/$name/"
+          tar -czf "dist/$name.tar.gz" -C dist "$name"
+          (cd dist && shasum -a 256 "$name.tar.gz" > checksums.txt)
+          cat dist/checksums.txt
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes \
+            dist/*.tar.gz dist/checksums.txt

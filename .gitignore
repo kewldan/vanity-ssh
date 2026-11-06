@@ -1,0 +1,6 @@
+.build/
+.swiftpm/
+*.xcodeproj
+DerivedData/
+/dist/
+id_ed25519_vanity*

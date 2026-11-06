@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format
+        run: brew install clang-format
+      - name: Lint
+        run: make lint
+
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: swift --version
+      - name: Build
+        run: swift build -c release
+      # GPU tests run when the runner exposes a Metal device and are skipped
+      # otherwise; pattern and key-file tests always run.
+      - name: Test
+        run: swift test
+      - name: Smoke test
+        run: |
+          .build/release/vanity-ssh --version
+          .build/release/vanity-ssh --help
