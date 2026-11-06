@@ -6,7 +6,7 @@ macOS 13+, Swift 6 package, one self-contained binary.
 ## Commands
 
 - `make test` — all tests. GPU tests compare every GPU digest with CryptoKit; they are skipped
-  when no Metal device exists (CI runners may lack one), so run them locally after GPU changes.
+  when no Metal device exists (GitHub macOS runners do expose one), but also run them locally after GPU changes.
 - `make lint` — `swift format lint --strict`, `clang-format` (Google style) on the Metal file, and
   a check that the embedded kernel is up to date. CI runs exactly this.
 - `make format` — apply formatting and regenerate `KernelSource.swift`.
