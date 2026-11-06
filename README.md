@@ -1,8 +1,11 @@
-# vanity-ssh
+# 🔑 vanity-ssh
 
 [![CI](https://github.com/kewldan/vanity-ssh/actions/workflows/ci.yml/badge.svg)](https://github.com/kewldan/vanity-ssh/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/kewldan/vanity-ssh)](https://github.com/kewldan/vanity-ssh/releases)
 ![macOS](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple)
+![Swift](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
+![Metal](https://img.shields.io/badge/GPU-Metal-8A2BE2?logo=apple&logoColor=white)
+[![Downloads](https://img.shields.io/github/downloads/kewldan/vanity-ssh/total)](https://github.com/kewldan/vanity-ssh/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Find an Ed25519 SSH key whose fingerprint spells something, using the GPU on your Mac.
@@ -21,15 +24,15 @@ Public key:  /Users/you/.ssh/id_ed25519_kewldan.pub
 That fingerprint is what `ssh-keygen -l`, GitHub's key settings and `git log --show-signature`
 display. It took 48 minutes on an M4 Pro.
 
-- **Fast.** About 5.5 million keys per second on an M4 Pro, 8 times faster than a CPU search on
+- ⚡ **Fast.** About 5.5 million keys per second on an M4 Pro, 8 times faster than a CPU search on
   all 12 of its cores.
-- **Ordinary keys.** The result is a normal OpenSSH `ssh-ed25519` key that `ssh`, `ssh-keygen`,
+- 🔐 **Ordinary keys.** The result is a normal OpenSSH `ssh-ed25519` key that `ssh`, `ssh-keygen`,
   `git` and GitHub accept as-is.
-- **Checked twice.** Every match the GPU reports is derived again on the CPU with CryptoKit
+- ✅ **Checked twice.** Every match the GPU reports is derived again on the CPU with CryptoKit
   before it's written to disk.
-- **One binary.** No dependencies at runtime; the Metal kernels are compiled on first use.
+- 📦 **One binary.** No dependencies at runtime; the Metal kernels are compiled on first use.
 
-## Install
+## 📥 Install
 
 Download the latest release (a universal binary for Apple Silicon and Intel Macs):
 
@@ -53,7 +56,7 @@ swift build -c release
 sudo install .build/release/vanity-ssh /usr/local/bin/
 ```
 
-## Usage
+## 🚀 Usage
 
 ```sh
 vanity-ssh kewl                                # fingerprint starts with "kewl", any case
@@ -73,7 +76,7 @@ The key has no passphrase, like `ssh-keygen -N ""`. To add one afterwards:
 ssh-keygen -p -f ~/.ssh/id_ed25519_kewl
 ```
 
-### What you can search for
+### 🔤 What you can search for
 
 A fingerprint is 43 base64 characters, so a pattern can use `A-Z`, `a-z`, `0-9`, `+` and `/`.
 There is no `-`, `_` or `.`.
@@ -84,7 +87,7 @@ The last character of a fingerprint is always one of `AEIMQUYcgkosw048`, so a
 `--position suffix` pattern has to end with one of those. In any-case mode either case is enough:
 `dano` works because `o` is in the list, `dan` doesn't because neither `n` nor `N` is.
 
-### How long it takes
+### ⏱️ How long it takes
 
 Each letter multiplies the work by 32 (by 64 with `--case-sensitive`); digits, `+` and `/`
 multiply it by 64. Mean times on an M4 Pro at 5.5 million keys/s for a prefix:
@@ -101,7 +104,7 @@ These are averages and the search has no memory: you're 63% likely to finish wit
 and 95% likely within three times it. `--position contains` accepts the pattern at every position,
 so a 4-letter pattern is found about 40 times faster. The progress line shows the mean time for your pattern and GPU.
 
-## Signing git commits with the key
+## ✍️ Signing git commits with the key
 
 ```sh
 git config --global gpg.format ssh
@@ -122,7 +125,7 @@ gh auth refresh -h github.com -s admin:ssh_signing_key
 gh ssh-key add ~/.ssh/id_ed25519_kewl.pub --type signing --title "vanity signing key"
 ```
 
-## How it works
+## ⚙️ How it works
 
 OpenSSH stores an Ed25519 private key as a 32-byte seed. The public key is derived from it as
 RFC 8032 specifies, and the fingerprint is the SHA-256 of the public key blob:
@@ -144,7 +147,7 @@ A shortcut that steps through consecutive scalars would be far faster, but it ca
 seed, and without a seed the key can't be stored in OpenSSH's format. vanity-ssh only creates
 keys that OpenSSH itself could have generated.
 
-## Security
+## 🛡️ Security
 
 - Each batch of about 4 million seeds starts from 32 fresh bytes from the system CSPRNG
   (`SecRandomCopyBytes`); seed *i* of a batch is that value with *i* XORed into its first four
@@ -156,7 +159,7 @@ keys that OpenSSH itself could have generated.
 A vanity fingerprint is for fun and recognisability, not security: anyone can find a key whose
 fingerprint starts with the same few characters, so check the whole fingerprint when it matters.
 
-## Development
+## 🛠️ Development
 
 ```sh
 make test     # unit tests; the GPU tests compare against CryptoKit
@@ -172,6 +175,6 @@ in the binary.
 Releases are built by GitHub Actions when a `v*` tag is pushed. The tag has to match the version
 in `Sources/VanitySSH/Version.swift`.
 
-## License
+## 📄 License
 
 [MIT](LICENSE)
